@@ -32,7 +32,7 @@ public class UserService {
     }
 
     public User updateUser(User user) {
-        return userRepository.save(user);
+        return userRepository.updateUser(user);
     }
     public User getUserById(int id) {
         return userRepository.getUserById(id);
