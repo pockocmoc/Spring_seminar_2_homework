@@ -1,6 +1,7 @@
 package com.example.demo.repositories;
 
 import com.example.demo.model.User;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -12,13 +13,26 @@ public class UserRepository {
 
     private final JdbcTemplate jdbc;
 
+    @Value("${sql.findAll}")
+    private String sqlFindAll;
+
+    @Value("${sql.save}")
+    private String sqlSave;
+
+    @Value("${sql.deleteById}")
+    private String sqlDeleteById;
+
+    @Value("${sql.updateUser}")
+    private String sqlUpdateUser;
+
+    @Value("${sql.getUserById}")
+    private String sqlGetUserById;
+
     public UserRepository(JdbcTemplate jdbc) {
         this.jdbc = jdbc;
     }
 
     public List<User> findAll() {
-        String sql = "SELECT * FROM userTable";
-
         RowMapper<User> userRowMapper = (r, i) -> {
             User rowObject = new User();
             rowObject.setId(r.getInt("id"));
@@ -27,19 +41,16 @@ public class UserRepository {
             return rowObject;
         };
 
-        return jdbc.query(sql, userRowMapper);
+        return jdbc.query(sqlFindAll, userRowMapper);
     }
 
-
     public User save(User user) {
-        String sql = "INSERT INTO userTable VALUES (NULL, ?, ?)";
-        jdbc.update(sql, user.getFirstName(), user.getLastName());
+        jdbc.update(sqlSave, user.getFirstName(), user.getLastName());
         return user;
     }
 
     public void deleteById(int id) {
-        String sql = "DELETE FROM userTable WHERE id = ?";
-        jdbc.update(sql, id);
+        jdbc.update(sqlDeleteById, id);
     }
 
     public User updateUser(User user) {
@@ -50,17 +61,12 @@ public class UserRepository {
             throw new IllegalArgumentException("User with id " + user.getId() + " does not exist");
         }
 
-        String sql = "UPDATE userTable SET firstName = ?, lastName = ? WHERE id = ?";
-        jdbc.update(sql, user.getFirstName(), user.getLastName(), user.getId());
+        jdbc.update(sqlUpdateUser, user.getFirstName(), user.getLastName(), user.getId());
 
         return user;
     }
 
-
     public User getUserById(int id) {
-        String sql = "SELECT * FROM userTable WHERE id = ?";
-        return jdbc.queryForObject(sql, new Object[]{id}, new UserRowMapper());
+        return jdbc.queryForObject(sqlGetUserById, new Object[]{id}, new UserRowMapper());
     }
-
-
 }
